@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baby Gear Finder & Tracker</title>
+<style>
+  :root{
+    --bg:#fbf7f4; --card:#ffffff; --ink:#33302e; --muted:#8a817b;
+    --line:#ece4de; --accent:#d98a8a; --accent2:#7fa8a0; --gold:#e2a93b;
+    --bought:#e8f3ee; --bought-b:#7fa8a0; --need:#fdeedf; --need-b:#e2a93b;
+    --shadow:0 1px 3px rgba(80,60,50,.06),0 6px 18px rgba(80,60,50,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  header{padding:28px 20px 18px;text-align:center;background:linear-gradient(180deg,#fff,transparent)}
+  h1{margin:0 0 4px;font-size:26px;letter-spacing:-.3px}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 16px 60px}
+  .controls{position:sticky;top:0;z-index:20;background:var(--bg);
+    padding:12px 0;border-bottom:1px solid var(--line);display:flex;
+    flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:8px}
+  .controls input[type=search]{flex:1;min-width:180px;padding:10px 14px;border:1px solid var(--line);
+    border-radius:30px;font-size:14px;background:#fff;color:var(--ink)}
+  .seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:30px;overflow:hidden}
+  .seg button{border:0;background:transparent;padding:9px 14px;font-size:13px;cursor:pointer;color:var(--muted)}
+  .seg button.on{background:var(--accent);color:#fff}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:30px;padding:9px 14px;font-size:13px;
+    cursor:pointer;color:var(--muted);user-select:none}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .summary{display:flex;gap:18px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid var(--line);
+    border-radius:14px;padding:14px 18px;margin:14px 0 6px;box-shadow:var(--shadow);font-size:14px}
+  .summary b{font-size:20px}
+  .bar{flex:1;min-width:160px;height:9px;background:var(--line);border-radius:6px;overflow:hidden}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--gold))}
+  details.sec{background:transparent;margin-top:22px}
+  details.sec > summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;
+    padding:6px 2px;border-bottom:2px solid var(--line)}
+  details.sec > summary::-webkit-details-marker{display:none}
+  .sec h2{font-size:18px;margin:0}
+  .sec .cat{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .sec .scount{margin-left:auto;font-size:12px;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;margin-top:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 15px 13px;
+    box-shadow:var(--shadow);display:flex;flex-direction:column;gap:9px;transition:.15s}
+  .card.is-bought{background:var(--bought);border-color:var(--bought-b)}
+  .card.is-need{background:var(--need);border-color:var(--need-b)}
+  .card.is-bought.is-need{background:linear-gradient(135deg,var(--bought),var(--need))}
+  .ctop{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .nm{font-weight:650;font-size:15px;line-height:1.3}
+  .pick{font-size:10px;font-weight:700;color:#fff;background:var(--accent);padding:2px 7px;border-radius:20px;
+    white-space:nowrap;letter-spacing:.03em}
+  .meta{display:flex;align-items:center;gap:10px;font-size:13px;flex-wrap:wrap}
+  .stars{color:var(--gold);letter-spacing:1px}
+  .rnum{color:var(--muted)}
+  .price{font-weight:700;color:var(--accent2)}
+  .price.unk{color:var(--muted);font-weight:500}
+  .desc{font-size:13px;color:#5f5853;margin:0}
+  .links{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+  .links a{font-size:11.5px;text-decoration:none;border:1px solid var(--line);border-radius:20px;
+    padding:5px 10px;color:var(--ink);background:#fff;transition:.12s}
+  .links a:hover{border-color:var(--accent);color:var(--accent)}
+  .acts{display:flex;gap:8px;margin-top:4px}
+  .acts button{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px;
+    font-size:12.5px;font-weight:600;cursor:pointer;color:var(--muted)}
+  .acts button.on.b{background:var(--bought-b);border-color:var(--bought-b);color:#fff}
+  .acts button.on.n{background:var(--need-b);border-color:var(--need-b);color:#fff}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:30px 16px;line-height:1.7}
+  .note{font-size:11.5px;color:var(--muted);font-style:italic}
+  @media (max-width:560px){.summary{font-size:13px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🍼 Baby Gear Finder &amp; Tracker</h1>
+  <p class="sub">Your whole list in one place — ranked, priced, and check-off-able. <span id="today"></span></p>
+</header>
+<div class="wrap">
+  <div class="controls">
+    <input id="q" type="search" placeholder="Search anything… (bottle, pump, stroller…)">
+    <div class="seg" id="sort">
+      <button data-s="rated" class="on">★ Top rated</button>
+      <button data-s="price">$ Lowest price</button>
+    </div>
+    <div class="chip" id="fNeed">Show needed only</div>
+    <div class="chip" id="fHide">Hide bought</div>
+    <div class="chip" id="reset" title="Clear all checkmarks">Reset ✕</div>
+  </div>
+
+  <div class="summary">
+    <div><b id="nBought">0</b><br>bought</div>
+    <div><b id="nNeed">0</b><br>marked needed</div>
+    <div><b id="nTotal">0</b><br>products tracked</div>
+    <div class="bar"><i id="prog" style="width:0%"></i></div>
+  </div>
+
+  <div id="app"></div>
+
+  <footer>
+    Prices &amp; ratings are approximate, gathered from 2026 buyer guides &amp; retailer listings — every link opens
+    <b>live results sorted cheapest-first</b>, so today's real offers always show.<br>
+    ★ = a product you flagged in your own notes. Your checkmarks save automatically on this device.<br>
+    <span class="note">Not medical advice — loungers/nests are for supervised awake time only, never for sleep.</span>
+  </footer>
+</div>
+
+<script>
+/* ---------- DATA ----------
+ q = live search query (links auto-built, cheapest-first)
+ r = approx rating /5, p = approx price USD (null = varies), pick = from your notes */
+const DATA = [
+ {cat:"Feeding", title:"Bottles & Pacifiers", items:[
+  {n:"Comotomo Baby Bottle (Gen 2)",r:4.7,p:26,q:"Comotomo baby bottle",d:"#1-rated soft squishy silicone, wide rounded nipple — easiest latch for breastfed babies."},
+  {n:"Dr. Brown's Natural Flow Anti-Colic",r:4.8,p:30,q:"Dr Brown's Natural Flow anti colic bottle",d:"Best for newborns/preemies — vented system cuts colic, gas & spit-up. Many nipple flow levels."},
+  {n:"Pigeon SofTouch III Bottle",r:4.7,p:13,q:"Pigeon SofTouch III baby bottle",d:"Your pick. Japanese brand with a soft peristaltic nipple that mimics natural latch.",pick:1},
+  {n:"Philips Avent Natural Response",r:4.6,p:25,q:"Philips Avent Natural Response bottle",d:"Twist-on wide nipple releases milk only when baby actively drinks."},
+  {n:"Evenflo Balance+ Wide Neck",r:4.6,p:18,q:"Evenflo Balance Plus wide neck bottle",d:"Your pick. Budget hero (~$3/bottle), slow-flow nipple shaped like the breast.",pick:1},
+  {n:"Gulicola Bottles",r:null,p:null,q:"Gulicola baby bottle",d:"Your pick — compare current listings & reviews via the live links.",pick:1},
+  {n:"Philips Avent Soothie Pacifier",r:4.8,p:6,q:"Philips Avent Soothie pacifier",d:"The hospital-standard newborn pacifier — single-piece medical silicone."},
+  {n:"BIBS Pacifiers",r:4.7,p:13,q:"BIBS pacifier newborn",d:"Cult-favorite round cherry nipple, lightweight, lots of colors."}
+ ]},
+ {cat:"Feeding", title:"Pumping", items:[
+  {n:"Spectra S1 Plus (rechargeable)",r:4.8,p:279,q:"Spectra S1 Plus breast pump",d:"Your pick. Hospital-strength, quiet, closed-system — rechargeable so you can pump anywhere.",pick:1},
+  {n:"Spectra S2 Plus (plug-in)",r:4.8,p:216,q:"Spectra S2 Plus breast pump",d:"Same trusted motor as S1, plug-in only — usually insurance-covered & cheaper."},
+  {n:"Eufy S2 Pro Wearable Pump",r:4.6,p:369,q:"Eufy S2 Pro wearable breast pump",d:"Your pick. In-bra hands-free, 300 mmHg suction, app control, under-46 dB, heat + massage modes.",pick:1},
+  {n:"Momcozy Mobile Flow / M5 Wearable",r:4.5,p:150,q:"Momcozy wearable breast pump",d:"Popular value wearable — fully cordless, much cheaper than premium hands-free pumps."},
+  {n:"Flanges (correct sizing kit)",r:4.6,p:15,q:"breast pump flange insert sizing kit",d:"Right flange size = comfort + output. Maymom/Momcozy inserts fit most pumps."},
+  {n:"Haakaa Silicone Milk Collector",r:4.7,p:13,q:"Haakaa silicone breast pump milk collector",d:"Suctions to the other breast to catch let-down milk — zero waste, no batteries."},
+  {n:"Colostrum Collector Kit",r:4.6,p:10,q:"colostrum collector syringe kit",d:"Sterile syringes for harvesting & storing colostrum before/after birth."}
+ ]},
+ {cat:"Feeding", title:"Milk Storage & Bottle Prep", items:[
+  {n:"Lansinoh Storage Bags (bulk)",r:4.8,p:13,q:"Lansinoh breast milk storage bags",d:"Best-selling freezer bags — double-zip, stand-up, lay-flat to save freezer space."},
+  {n:"Medela EasyPour Bags",r:4.7,p:12,q:"Medela EasyPour breast milk storage bags",d:"Spout corner = clean, no-spill transfers into bottles."},
+  {n:"Papablic CapsuleChill Cooler",r:4.6,p:90,q:"Papablic CapsuleChill breast milk cooler",d:"Your pick. 360° ice chambers keep milk safely cold up to 36h, no ice packs needed.",pick:1},
+  {n:"Momcozy 22oz Portable Cooler",r:4.5,p:40,q:"Momcozy portable breast milk cooler 22oz",d:"Holds two bottles cold 24h+ with surround-cooling tube — lighter on the wallet."},
+  {n:"Boon Grass Drying Rack / Organizer",r:4.6,p:15,q:"Boon Grass bottle drying rack",d:"Countertop drying + organizing for bottles, flanges & pump parts."},
+  {n:"Momcozy KleanPal Pro Bottle Washer",r:4.5,p:299,q:"Momcozy KleanPal Pro bottle washer",d:"Your pick. Tankless wash + sterilize + dry, 26 jets, keeps sterile 72h, drains to sink.",pick:1},
+  {n:"Baby Brezza Bottle Washer Pro",r:4.3,p:299,q:"Baby Brezza bottle washer pro",d:"All-in-one wash/sterilize/dry alternative — 20 targeted jets, wheels for the counter."}
+ ]},
+ {cat:"Nursery & Sleep", title:"Sleep Space", items:[
+  {n:"Chicco Next2Me / LullaGlide Bassinet",r:4.6,p:180,q:"Chicco Next2Me bedside bassinet",d:"Your pick. Bedside sleeper that attaches to your bed; converts to stationary or gliding.",pick:1},
+  {n:"HALO BassiNest Swivel 3.0",r:4.7,p:280,q:"HALO BassiNest Swivel Sleeper 3.0",d:"Best traditional bassinet — 360° swivel + lower-down wall for easy night feeds; nightlight & sounds."},
+  {n:"Happiest Baby SNOO Smart Sleeper",r:4.6,p:1695,q:"SNOO smart sleeper bassinet",d:"Auto-rocks & shushes baby back to sleep. Pricey to buy (~$1,695) — rentals ~$159/mo."},
+  {n:"Babyletto Hudson 3-in-1 Crib",r:4.8,p:379,q:"Babyletto Hudson convertible crib",d:"GREENGUARD-certified convertible crib that grows into a toddler & daybed."}
+ ]},
+ {cat:"Nursery & Sleep", title:"Sleep Essentials", items:[
+  {n:"Ergobaby Swaddler",r:4.6,p:25,q:"Ergobaby swaddler",d:"Top-rated newborn swaddle — soft 100% cotton with a touch of stretch & wide neck."},
+  {n:"Love to Dream Swaddle Up",r:4.7,p:35,q:"Love to Dream Swaddle Up",d:"Arms-up wings let baby self-soothe in a natural position; zip on/off."},
+  {n:"HALO SleepSack Swaddle",r:4.7,p:25,q:"HALO SleepSack swaddle",d:"Adjustable wrap + wearable-blanket bottom; swaddle arms in or out."},
+  {n:"HALO SleepSack Wearable Blanket",r:4.7,p:25,q:"HALO SleepSack wearable blanket",d:"The safe-sleep blanket alternative once baby outgrows swaddling — many TOG warmths."}
+ ]},
+ {cat:"Nursery & Sleep", title:"Nursery Care", items:[
+  {n:"Keekaroo Peanut Changing Pad",r:4.8,p:150,q:"Keekaroo Peanut changing pad",d:"Wipe-clean soft surface — no cover, no laundry. A long-haul favorite."},
+  {n:"Contoured Changing Pad + Covers",r:4.6,p:35,q:"contoured changing pad with cover",d:"Budget route: secure contoured pad with 2-sided buckle + washable covers."},
+  {n:"Munchkin Portable Diaper Caddy",r:4.6,p:25,q:"diaper caddy organizer",d:"Carry diapers, wipes & creams room to room; sturdy felt with handles."},
+  {n:"Ubbi Steel Diaper Pail",r:4.7,p:80,q:"Ubbi steel diaper pail",d:"Best odor control & uses ANY regular trash bag — no pricey refills. Looks nice in the nursery."},
+  {n:"Diaper Genie Complete",r:4.6,p:45,q:"Diaper Genie Complete diaper pail",d:"Foot-pedal hands-free; great for the newborn stage (note: proprietary refills ~$120/yr)."}
+ ]},
+ {cat:"Nursery & Sleep", title:"Comfort", items:[
+  {n:"Boppy Original Nursing Pillow",r:4.6,p:40,q:"Boppy original nursing pillow",d:"Wraps your waist to support baby during feeds; doubles for tummy time & propping."},
+  {n:"My Brest Friend Nursing Pillow",r:4.7,p:45,q:"My Brest Friend nursing pillow",d:"Firmer, flat surface with back support & a buckle — lactation-consultant favorite."},
+  {n:"Hatch Rest 2nd Gen (light + sound)",r:4.7,p:60,q:"Hatch Rest 2nd gen night light sound machine",d:"Your pick. Nightlight + sound machine + time-to-rise, all app-controlled.",pick:1},
+  {n:"VAVA Baby Nightlight",r:4.6,p:20,q:"VAVA baby night light",d:"Simple dimmable, portable, long-battery nightlight for feeds & changes."}
+ ]},
+ {cat:"Travel & On-the-Go", title:"Car Seats", items:[
+  {n:"Chicco KeyFit 35 Infant Seat",r:4.8,p:230,q:"Chicco KeyFit 35 infant car seat",d:"Best value — the most foolproof install + top crash-protection rating."},
+  {n:"UPPAbaby Mesa V2 Infant Seat",r:4.8,p:350,q:"UPPAbaby Mesa V2 infant car seat",d:"Best overall — comfy for baby, easy for parents, no-rethread harness, load leg."},
+  {n:"UPPAbaby Aria Infant Seat",r:4.7,p:350,q:"UPPAbaby Aria infant car seat",d:"Your pick. The lightest infant carrier on the market (~6 lb) with excellent install indicators.",pick:1},
+  {n:"Nuna PIPA RX Infant Seat",r:4.8,p:400,q:"Nuna PIPA RX infant car seat",d:"A true newborn carrier (clicks on/off the stroller) — top crash scores, organic, no fire retardants."},
+  {n:"Nuna REVV Rotating Convertible",r:4.7,p:500,q:"Nuna Revv rotating convertible car seat",d:"Your note: doesn't detach as a carrier. Rotates to face you for easy loading; lasts for years.",pick:1}
+ ]},
+ {cat:"Travel & On-the-Go", title:"Strollers", items:[
+  {n:"UPPAbaby Minu V3",r:4.7,p:450,q:"UPPAbaby Minu V3 stroller",d:"Your pick. Compact one-hand fold, ~16.7 lb, big basket; pairs with Mesa/Aria car seats.",pick:1},
+  {n:"Nuna TRIV Next",r:4.7,p:550,q:"Nuna TRIV next stroller",d:"Your pick. Light, smooth, one-hand fold; works with PIPA seats for a full travel system.",pick:1},
+  {n:"Cybex Eos",r:4.6,p:500,q:"Cybex Eos stroller",d:"Your pick. Full-size comfort in a foldable frame; reversible seat & large canopy.",pick:1}
+ ]},
+ {cat:"Travel & On-the-Go", title:"Portable Gear", items:[
+  {n:"Momcozy BM08 Monitor",r:4.5,p:200,q:"Momcozy BM08 baby monitor",d:"Your pick. Flagship — contact-free mmWave breathing/heart tracking + 2K video & AI alerts.",pick:1},
+  {n:"Momcozy BM04 Monitor",r:4.6,p:180,q:"Momcozy BM04 baby monitor",d:"Top value pick — all features free, no subscription, great video."},
+  {n:"Nanit Pro Monitor",r:4.6,p:299,q:"Nanit Pro baby monitor",d:"Best sleep analytics & overhead view (subscription ~$100/yr for full data)."},
+  {n:"Eufy SpaceView / E21 Monitor",r:4.6,p:150,q:"Eufy baby monitor no wifi",d:"Hack-proof non-WiFi option — no app, no cloud, no fees ever."},
+  {n:"Philips Avent Monitor",r:4.4,p:200,q:"Philips Avent baby monitor",d:"Your pick. Reliable private-connection video monitor, no internet required.",pick:1},
+  {n:"Hatch Rest Go Portable Sound Machine",r:4.7,p:30,q:"Hatch Rest Go portable sound machine",d:"Pocket-size rechargeable white-noise for naps on the move."},
+  {n:"Skip Hop / Itzy Ritzy Diaper Bag",r:4.7,p:60,q:"diaper bag backpack",d:"Backpack-style with insulated bottle pockets, changing pad & wipeable lining."}
+ ]},
+ {cat:"Soothing & Baby Gear", title:"Soothing & Gear", items:[
+  {n:"BabyBjörn Bouncer Balance Soft",r:4.8,p:220,q:"BabyBjorn Bouncer Balance Soft",d:"Best-overall bouncer — natural baby-powered bounce, ergonomic, newborn to toddler chair."},
+  {n:"Ingenuity / Budget Bouncer",r:4.5,p:45,q:"baby bouncer seat infant",d:"Lower-cost vibrating bouncer if you don't need the premium pick."},
+  {n:"Snuggle Me Organic Lounger",r:4.6,p:80,q:"Snuggle Me Organic infant lounger",d:"Your pick. Cozy organic nest for supervised awake tummy-time & bonding (never for sleep).",pick:1},
+  {n:"KeaBabies Baby Wrap Carrier",r:4.7,p:30,q:"KeaBabies baby wrap carrier",d:"Your pick. Stretchy newborn wrap, IHDI hip-healthy, ~$30 — as good as pricier Boba/Moby.",pick:1},
+  {n:"Konny / Koala Baby Carrier",r:4.6,p:40,q:"Konny baby carrier newborn",d:"Your pick. Slip-on structured wrap — newborn-friendly with no buckle learning curve.",pick:1},
+  {n:"Mabe Baby Carrier",r:null,p:null,q:"Mabe baby carrier",d:"Your pick — compare current listings & reviews via the live links.",pick:1},
+  {n:"Ergobaby Omni / BabyBjörn Mini",r:4.7,p:140,q:"Ergobaby Omni baby carrier",d:"Structured buckle carrier for when baby's bigger — multiple carry positions, all-day support."}
+ ]},
+ {cat:"Bath Time", title:"Bath Time", items:[
+  {n:"OXO Tot Splash & Store Tub",r:4.7,p:45,q:"OXO Tot Splash and Store bathtub",d:"Collapses flat for storage/travel; smooth contoured support for newborns."},
+  {n:"Stokke Flexi Bath (foldable)",r:4.7,p:40,q:"Stokke Flexi Bath foldable",d:"Newborn-to-4yrs foldable tub with heat-sensitive plug for easy emptying."},
+  {n:"Frida / Duck Water Thermometer",r:4.5,p:12,q:"baby bath water thermometer",d:"Floating thermometer so bathwater is always a safe temp."}
+ ]},
+ {cat:"Health & Hygiene", title:"Daily Care", items:[
+  {n:"Pampers Swaddlers (Newborn)",r:4.8,p:28,q:"Pampers Swaddlers newborn diapers",d:"Softest newborn diaper with wetness indicator & umbilical-cord notch."},
+  {n:"Huggies Little Snugglers",r:4.7,p:27,q:"Huggies Little Snugglers newborn diapers",d:"Great alternative — pocketed back waistband to contain newborn blowouts."},
+  {n:"WaterWipes",r:4.8,p:0,priceLabel:"~$0.05/wipe",q:"WaterWipes baby wipes",d:"Your pick. 99.9% water + a drop of fruit extract — the purest wipe for newborn skin.",pick:1},
+  {n:"Aquaphor Baby Healing Ointment",r:4.9,p:13,q:"Aquaphor Baby healing ointment",d:"Your pick. The all-purpose hero — diaper rash, dry skin, cheeks, the works.",pick:1}
+ ]},
+ {cat:"Health & Hygiene", title:"Grooming", items:[
+  {n:"Frida Baby Electric Nail Buffer",r:4.6,p:15,q:"Frida Baby electric nail file buffer",d:"Your pick. Gently files tiny nails with an LED light — way less scary than clippers.",pick:1},
+  {n:"Frida Electric NoseFrida",r:4.5,p:35,q:"Frida Electric NoseFrida nasal aspirator",d:"Motorized snot-sucker, 3 suction levels — hands-free congestion relief."},
+  {n:"NoseFrida Manual + Saline Kit",r:4.7,p:20,q:"NoseFrida nasal aspirator saline",d:"Your pick. The classic manual aspirator; pair with saline drops to loosen congestion.",pick:1}
+ ]},
+ {cat:"Health & Hygiene", title:"Medicine Cabinet", items:[
+  {n:"Frida 3-in-1 Infrared Thermometer",r:4.6,p:16,q:"Frida Baby 3-in-1 ear forehead thermometer",d:"Your pick. No-contact forehead + ear reading in seconds.",pick:1},
+  {n:"Kinsa Smart Thermometer",r:4.6,p:25,q:"Kinsa smart thermometer baby",d:"App logs temps & symptoms over time — handy for the pediatrician."},
+  {n:"Mommy's Bliss Gripe Water",r:4.6,p:10,q:"Mommy's Bliss gripe water",d:"Your pick. Classic soother for gas, fussiness & hiccups.",pick:1},
+  {n:"Gerber Soothe Probiotic Drops",r:4.6,p:18,q:"Gerber Soothe probiotic colic drops",d:"Daily probiotic drops studied to reduce colic crying."}
+ ]},
+ {cat:"Play & Development", title:"Play & Development", items:[
+  {n:"Lovevery The Play Gym",r:4.8,p:150,q:"Lovevery Play Gym",d:"Your pick. Award-winning stage-based gym that grows newborn→toddler; Montessori-inspired.",pick:1}
+ ]},
+ {cat:"Breastfeeding & Postpartum", title:"Breastfeeding", items:[
+  {n:"Bravado Body Silk Seamless Bra",r:4.7,p:49,q:"Bravado Body Silk Seamless nursing bra",d:"Two-time Best-of-Bump winner — wireless, seamless, easy clip-down."},
+  {n:"Bodily The Everything Bra",r:4.6,p:50,q:"Bodily Everything Bra nursing",d:"Ultra-soft OEKO-TEX, 5-row closure, adjusts through pregnancy → nursing."},
+  {n:"Kindred Bravely Sleep Nursing Bra",r:4.7,p:45,q:"Kindred Bravely nursing sleep bra",d:"Buttery pull-aside bra for overnight comfort & leak pads."},
+  {n:"Lansinoh Lanolin Nipple Cream",r:4.8,p:11,q:"Lansinoh lanolin nipple cream",d:"The go-to soothing balm — safe for baby, no need to wipe off before feeding."},
+  {n:"Silverette Nursing Cups",r:4.7,p:50,q:"Silverette silver nursing cups",d:"Pure-silver cups that naturally protect & heal sore nipples between feeds."},
+  {n:"Medela Hydrogel Pads",r:4.6,p:13,q:"Medela hydrogel pads nursing",d:"Cooling gel pads for instant relief on tender nipples."}
+ ]},
+ {cat:"Breastfeeding & Postpartum", title:"Postpartum Recovery", items:[
+  {n:"Frida Mom L&D + Recovery Kit",r:4.7,p:100,q:"Frida Mom labor delivery postpartum recovery kit",d:"Best-rated all-in-one kit — gown, peri bottle, ice maxi pads, cooling liners, disposable underwear & more."},
+  {n:"Bodily Care for Birth Box",r:4.6,p:90,q:"Bodily Care for Birth box postpartum",d:"11 recovery essentials — thick pads, reusable underwear, stool softeners & guidebooks."},
+  {n:"Frida Mom Peri Bottle",r:4.8,p:16,q:"Frida Mom peri bottle",d:"Angled-neck cleansing bottle that makes postpartum bathroom trips far gentler."},
+  {n:"Disposable Postpartum Underwear",r:4.6,p:15,q:"disposable postpartum underwear high waist",d:"Soft, stretchy, throw-away undies for the early bleeding weeks."}
+ ]}
+];
+
+/* ---------- BUILD ---------- */
+const app=document.getElementById('app');
+const store=JSON.parse(localStorage.getItem('babyTracker')||'{}');
+const save=()=>localStorage.setItem('babyTracker',JSON.stringify(store));
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+let state={sort:'rated',needOnly:false,hideBought:false,q:''};
+
+function links(q){
+  const e=encodeURIComponent(q);
+  return [
+    ['Amazon · cheapest','https://www.amazon.com/s?k='+e+'&s=price-asc-rank'],
+    ['Target','https://www.target.com/s?searchTerm='+e],
+    ['Google Shopping','https://www.google.com/search?tbm=shop&q='+e]
+  ];
+}
+function stars(r){
+  if(r==null) return '<span class="rnum">rating varies</span>';
+  const full=Math.round(r);
+  return '<span class="stars">'+'★'.repeat(full)+'☆'.repeat(5-full)+'</span><span class="rnum">'+r.toFixed(1)+'</span>';
+}
+function priceTxt(it){
+  if(it.priceLabel) return '<span class="price">'+it.priceLabel+'</span>';
+  if(it.p==null) return '<span class="price unk">price varies</span>';
+  if(it.p===0) return '<span class="price">budget</span>';
+  return '<span class="price">~$'+it.p+'</span>';
+}
+
+function render(){
+  app.innerHTML='';
+  let totBought=0,totNeed=0,totAll=0;
+  DATA.forEach((sec,si)=>{
+    let items=sec.items.map((it,ii)=>({...it,id:slug(sec.title)+'-'+ii}));
+    // filter
+    let vis=items.filter(it=>{
+      const st=store[it.id]||{};
+      if(state.q && !(it.n+' '+it.d+' '+sec.title).toLowerCase().includes(state.q)) return false;
+      if(state.needOnly && !st.need) return false;
+      if(state.hideBought && st.bought) return false;
+      return true;
+    });
+    // sort
+    vis.sort((a,b)=>{
+      if(state.sort==='price'){
+        const pa=a.p==null?Infinity:a.p, pb=b.p==null?Infinity:b.p;
+        if(pa!==pb) return pa-pb;
+        return (b.r||0)-(a.r||0);
+      }
+      const ra=a.r==null?-1:a.r, rb=b.r==null?-1:b.r;
+      if(rb!==ra) return rb-ra;
+      return (a.p==null?Infinity:a.p)-(b.p==null?Infinity:b.p);
+    });
+    items.forEach(it=>{const st=store[it.id]||{};if(st.bought)totBought++;if(st.need)totNeed++;totAll++;});
+    if(!vis.length) return;
+    const d=document.createElement('details');d.className='sec';d.open=true;
+    d.innerHTML='<summary><span class="cat">'+sec.cat+'</span><h2>'+sec.title+'</h2>'+
+      '<span class="scount">'+vis.length+' picks</span></summary>';
+    const grid=document.createElement('div');grid.className='grid';
+    vis.forEach(it=>{
+      const st=store[it.id]||{};
+      const card=document.createElement('div');
+      card.className='card'+(st.bought?' is-bought':'')+(st.need?' is-need':'');
+      card.innerHTML=
+        '<div class="ctop"><div class="nm">'+it.n+'</div>'+(it.pick?'<span class="pick">★ YOUR PICK</span>':'')+'</div>'+
+        '<div class="meta">'+stars(it.r)+priceTxt(it)+'</div>'+
+        '<p class="desc">'+it.d+'</p>'+
+        '<div class="links">'+links(it.q).map(l=>'<a href="'+l[1]+'" target="_blank" rel="noopener">'+l[0]+' ↗</a>').join('')+'</div>'+
+        '<div class="acts">'+
+          '<button class="b'+(st.bought?' on':'')+'" data-act="bought" data-id="'+it.id+'">'+(st.bought?'✓ Bought':'Mark bought')+'</button>'+
+          '<button class="n'+(st.need?' on':'')+'" data-act="need" data-id="'+it.id+'">'+(st.need?'✓ Needed':'Mark needed')+'</button>'+
+        '</div>';
+      grid.appendChild(card);
+    });
+    d.appendChild(grid);app.appendChild(d);
+  });
+  document.getElementById('nBought').textContent=totBought;
+  document.getElementById('nNeed').textContent=totNeed;
+  document.getElementById('nTotal').textContent=totAll;
+  document.getElementById('prog').style.width=(totAll?Math.round(totBought/totAll*100):0)+'%';
+}
+
+app.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-act]');if(!b)return;
+  const id=b.dataset.id,act=b.dataset.act;
+  store[id]=store[id]||{};store[id][act]=!store[id][act];save();render();
+});
+document.getElementById('q').addEventListener('input',e=>{state.q=e.target.value.trim().toLowerCase();render();});
+document.getElementById('sort').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  state.sort=b.dataset.s;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));render();
+});
+document.getElementById('fNeed').addEventListener('click',e=>{state.needOnly=!state.needOnly;e.target.classList.toggle('on',state.needOnly);render();});
+document.getElementById('fHide').addEventListener('click',e=>{state.hideBought=!state.hideBought;e.target.classList.toggle('on',state.hideBought);render();});
+document.getElementById('reset').addEventListener('click',()=>{if(confirm('Clear all your bought/needed checkmarks?')){for(const k in store)delete store[k];save();render();}});
+document.getElementById('today').textContent='Updated '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+render();
+</script>
+</body>
+</html>
